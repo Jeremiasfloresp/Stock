@@ -495,11 +495,6 @@ async function imprimirNota(notaId) {
 
     // Crear el PDF con jsPDF
     const docPDF = new jsPDF();
-    const img = new Image();
-    img.src = "./src/images/imagen.jpg"; 
-    img.crossOrigin = 'Anonymous';
-    docPDF.addImage(img ,'JPEG', 115, 2, 50, 50);
-
     docPDF.setFont('courier', 'bold');
     docPDF.setFontSize(10);
     const startX = 20;
