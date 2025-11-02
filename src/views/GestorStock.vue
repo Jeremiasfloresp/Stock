@@ -1,6 +1,6 @@
-<template>
+<template >
   <div>
-    <h2>Gestor de Stock</h2>
+    <br>
 
     <input
       v-model="busqueda"
@@ -14,7 +14,7 @@
       <input v-model.number="nuevo.precioUnitario" placeholder="Precio" type="number" step="0.01" required />
       <select v-model.number="nuevo.modo" required>
         <option :value="0">Por unidad</option>
-        <option :value="1">Por peso</option>
+        <option :value="1">Por blister</option>
       </select>
       <input v-model.number="nuevo.descuento" placeholder="Descuento (%)" type="number" />
       <button type="submit">{{ modoEdicion ? 'Actualizar' : 'Agregar producto' }}</button>
@@ -33,12 +33,12 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="prod in productosFiltrados" :key="prod.id">
+        <tr v-for="prod in productosPaginados" :key="prod.id">
           <td class="border px-1 py-0">{{ prod.codigo }}</td>
           <td class="border px-1 py-0">{{ prod.descripcion }}</td>
           <td class="border px-1 py-0">{{ prod.existencias }}</td>
           <td class="border px-1 py-0">{{ prod.precioUnitario }}</td>
-          <td class="border px-1 py-0">{{ prod.modo === 1 ? 'Peso' : 'Unidad' }}</td>
+          <td class="border px-1 py-0">{{ prod.modo === 1 ? 'Blister' : 'Unidad' }}</td>
           <td class="border px-1 py-0">{{ prod.descuento }}%</td>
           <td class="border px-1 py-0">
             <button @click="editarProducto(prod)">Editar</button>
@@ -147,13 +147,13 @@ const limpiarFormulario = () => {
     descripcion: '',
     existencias: 0,
     precioUnitario: 0,
-    modo: 0, // 0 = unitario, 1 = por peso
+    modo: 0, // 0 = unitario, 1 = por blister
     descuento: 0,
   }
 }
 
 const currentPage = ref(1);
-const itemsPerPage = 20;
+const itemsPerPage = 10;
 
 const productosPaginados = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
@@ -165,10 +165,7 @@ const totalPages = computed(() => {
   return Math.ceil(productosFiltrados.value.length / itemsPerPage);
 });
 
-// Al cambiar el filtro, volvemos a página 1
-watch(productosFiltrados, () => {
-  currentPage.value = 1;
-});
+watch(productosFiltrados, () => {});
 
 onMounted(cargarProductos)
 </script>

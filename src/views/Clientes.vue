@@ -1,5 +1,6 @@
 <template>
   <div>
+    <br>
     <h2 class="text-2xl font-bold mb-4">Gestión de Clientes</h2>
 
     <div class="mb-4">
@@ -28,8 +29,8 @@
             <input v-model="newCliente.nombre" type="text" placeholder="Nombre" class="modal-input" required />
             <input v-model="newCliente.identificador" type="text" placeholder="Identificación" class="modal-input" required />
             <input v-model="newCliente.direccion" type="text" placeholder="Dirección" class="modal-input" required />
-            <input v-model="newCliente.codigoPostal" type="text" placeholder="Código Postal" class="modal-input" required />
-            <input v-model="newCliente.localidad" type="text" placeholder="Localidad" class="modal-input" required />
+            <input disabled v-model="newCliente.codigoPostal" type="text" placeholder="Código Postal" class="modal-input" required />
+            <input disabled v-model="newCliente.localidad" type="text" placeholder="Localidad" class="modal-input" required />
             <input disabled v-model="newCliente.provincia" type="text" placeholder="Provincia" class="modal-input" />
             <input v-model="newCliente.telefono" type="text" placeholder="Teléfono" class="modal-input" required />
             <input v-model="newCliente.cuentaCorriente" type="text" placeholder="Cuenta Corriente" class="modal-input" required />
@@ -179,8 +180,8 @@ const newCliente = ref({
   nombre: '',
   identificador: '',
   direccion: '',
-  codigoPostal: '',
-  localidad: '',
+  codigoPostal: '6400',
+  localidad: 'TRENQUE LAUQUEN',
   provincia: 'BUENOS AIRES',
   telefono: '',
   cuentaCorriente: '',
@@ -276,7 +277,6 @@ const guardarCambiosCliente = async () => {
   fetchClientes()
 }
 
-// ✅ Esto va primero porque lo usan otros
 const filteredClientes = computed(() => {
   return clientes.value.filter(cliente =>
     cliente.nombre.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
@@ -284,9 +284,8 @@ const filteredClientes = computed(() => {
   );
 });
 
-// ✅ Luego usás filteredClientes aquí
 const currentPage = ref(1);
-const itemsPerPage = 20;
+const itemsPerPage = 10;
 
 const paginatedClientes = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;

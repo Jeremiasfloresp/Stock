@@ -1,6 +1,7 @@
 <template>
   <div>
     <!-- Botón que abre el modal -->
+    <br>
     <button @click="open = true">Nueva Nota</button>
     <!-- Teleport para el modal -->
     <teleport to="body">
@@ -24,11 +25,7 @@
                 />
                 <datalist id="lista-clientes">
                   <option value="CONSUMIDOR FINAL">CONSUMIDOR FINAL</option>
-                  <option
-                    v-for="cliente in clientesFiltrados"
-                    :key="cliente.id"
-                    :value="cliente.identificador + ' - ' + cliente.nombre"
-                  />
+                  <option v-for="cliente in clientesFiltrados" :key="cliente.id" :value="cliente.identificador + ' - ' + cliente.nombre"/>
                 </datalist>
               </div>
 
@@ -59,7 +56,7 @@
                 <br/>
                 <label>Peso</label>
                 <br/>
-                <input v-model.number="peso" type="number" />
+                <input v-model.number="peso" type="number" :disabled="productoSeleccionado?.modo === 0" />
                 <br/>
                 <label>Precio</label>
                 <br/>
@@ -81,7 +78,7 @@
                       <th class="border px-4 py-2">Código</th>
                       <th class="border px-4 py-2">Descripción</th>
                       <th class="border px-4 py-2">Unidades</th>
-                      <th class="border px-4 py-2">Peso(KG)</th>
+                      <th class="border px-4 py-2">Peso(g)</th>
                       <th class="border px-4 py-2">Precio($)</th>
                       <th class="border px-4 py-2">Dto</th>
                       <th class="border px-4 py-2">Total</th>
@@ -95,7 +92,7 @@
                       <td class="border px-1 py-0">{{ item.peso }}</td>
                       <td class="border px-1 py-0">{{ item.precio }}</td>
                       <td class="border px-1 py-0">{{ item.descuento }}%</td>
-                      <td class="border px-1 py-0">{{ ((item.precio * (item.modo === 1 ? item.peso : item.cantidad)).toFixed(2)) }}</td>
+                      <td class="border px-1 py-0">{{ ((item.precio * (item.modo === 1 ? item.peso/1000 : item.cantidad)).toFixed(2)) }}</td>
                     </tr>
                     <tr style="border: 0px">
                       <td></td>
@@ -128,13 +125,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="nota in notas" :key="nota.id" class="hover:bg-gray-100">
+        <tr v-for="nota in notasPagina" :key="nota.id" class="hover:bg-gray-100">
           <td class="border p-2">{{ nota.id }}</td>
           <td class="border p-2">{{ nota.fecha }}</td>
           <td class="border p-2">{{ nota.cliente }}</td>
           <td class="border p-2">$ {{ nota.total.toFixed(2) }}</td>
           <td class="border p-2 flex gap-2 justify-center">
-             <button @click="imprimirNota(nota.id)" class="bg-green-500 text-white px-3 py-1 rounded">Imprimir</button>
+            <button @click="imprimirNota(nota.id)" class="bg-green-500 text-white px-3 py-1 rounded">Nota</button>
+            <button @click="imprimirTalonario(nota.id)" class="bg-green-500 text-white px-3 py-1 rounded">Talonario</button>
             <button @click="eliminarNota(nota.id)" class="bg-red-500 text-white px-3 py-1 rounded">Eliminar</button>
           </td>
         </tr>
@@ -179,12 +177,34 @@ const detalleVenta = ref([])
 
 const notas = ref([])
 
+const cargarNotas = async () => {
+  const clientesSnap = await getDocs(collection(db, 'clientes'))
+  clientes.value = clientesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  clientesFiltrados.value = clientes.value
+
+  const productosSnap = await getDocs(collection(db, 'productos'))
+  productos.value = productosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  productosFiltrados.value = productos.value
+
+  // Cargar notas realizadas
+  const notasSnap = await getDocs(collection(db, 'nota', 'realizadas', 'notas'));
+  notas.value = notasSnap.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      cliente: data.cliente?.nombre || 'CONSUMIDOR FINAL',
+      total: data.total || 0,
+      fecha: data.fecha || null,
+    };
+  });
+}
+
 const total = computed(() =>
-  detalleVenta.value.reduce((suma, item) => suma + ((item.precio * (item.modo === 1 ? item.peso : item.cantidad)) * (1 - (item.descuento || 0) / 100)), 0)
+  detalleVenta.value.reduce((suma, item) => suma + ((item.precio * (item.modo === 1 ? item.peso/1000 : item.cantidad)) * (1 - (item.descuento || 0) / 100)), 0)
 )
 
 const paginaActual = ref(1);
-const elementosPorPagina = 20; // Puedes cambiar este valor
+const elementosPorPagina = 10; // Puedes cambiar este valor
 
 // Total de páginas (redondeado hacia arriba)
 const totalPaginas = computed(() => Math.ceil(notas.value.length / elementosPorPagina));
@@ -220,28 +240,6 @@ const paginasAMostrar = computed(() => {
 });
 
 
-onMounted(async () => {
-  const clientesSnap = await getDocs(collection(db, 'clientes'))
-  clientes.value = clientesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-  clientesFiltrados.value = clientes.value
-
-  const productosSnap = await getDocs(collection(db, 'productos'))
-  productos.value = productosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-  productosFiltrados.value = productos.value
-
-  // Cargar notas realizadas
-  const notasSnap = await getDocs(collection(db, 'nota', 'realizadas', 'notas'));
-  notas.value = notasSnap.docs.map(doc => {
-    const data = doc.data();
-    return {
-      id: doc.id,
-      cliente: data.cliente?.nombre || 'CONSUMIDOR FINAL',
-      total: data.total || 0,
-      fecha: data.fecha || null,
-    };
-  });
-})
-
 function filtrarClientes() {
   const texto = clienteInput.value.toLowerCase()
   clientesFiltrados.value = clientes.value.filter(c =>
@@ -272,7 +270,7 @@ async function agregarProducto() {
     existencias: productoSeleccionado.value.existencias,
   });
 
-  // Ahora subimos los datos a Firebase
+  // sube los datos a Firebase
   try {
     const productoData = {
       codigo: productoSeleccionado.value.codigo,
@@ -290,7 +288,7 @@ async function agregarProducto() {
     console.error('Error al agregar producto a Firebase:', e);
   }
 
-  // Restablecemos los valores después de agregar el producto
+  // Restablece los valores después de agregar el producto
   cantidad.value = 1;
   peso.value = 0;
   productoSeleccionado.value = null;
@@ -419,6 +417,8 @@ const generarNota = async () => {
     total.value = 0;
     console.log("Nota generada con éxito.");
     open.value = false;
+    await cargarNotas();
+    paginaActual.value = 1;
   } catch (error) {
     console.error("Error al generar la nota:", error);
   }
@@ -477,6 +477,100 @@ async function eliminarNota(idNota) {
   }
 }
 
+async function imprimirTalonario(notaId) {
+  try {
+    // Obtener los datos de la nota desde Firebase
+    const notaRef = doc(db, 'nota', 'realizadas', 'notas', notaId);
+    const notaSnap = await getDoc(notaRef);
+
+    if (!notaSnap.exists()) {
+      console.error('Nota no encontrada');
+      return;
+    }
+
+    const nota = notaSnap.data();
+
+    // Obtener los productos de la nota
+    const productos = nota.productos;
+
+    // Crear el PDF con jsPDF
+    const docTalonario = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: [120, 150] // ancho x alto
+    });
+    docTalonario.setFont('helvetica', 'bold');
+    docTalonario.setLineWidth(0.5);
+    docTalonario.rect(7, 10, 106, 30);
+    docTalonario.rect(7, 10, 106, 11);
+    docTalonario.rect(7, 10, 68, 11);
+    docTalonario.rect(75, 10, 10, 8);
+    docTalonario.rect(85, 10, 28, 8);
+    docTalonario.setFontSize(18);
+    docTalonario.text('X', 78, 16);
+    docTalonario.setFontSize(11);
+    docTalonario.text('NOTA DE', 90, 14);
+    docTalonario.text('PEDIDO', 91, 17);
+    docTalonario.setFontSize(5);
+    docTalonario.text('DOCUMENTO NO VALIDO COMO FACTURA', 75.5, 20);
+    docTalonario.rect(83, 21, 30, 7);
+    docTalonario.rect(83, 28, 30, 4);
+    docTalonario.rect(83, 32, 10, 8);
+    docTalonario.rect(93, 32, 10, 8);
+    docTalonario.rect(103, 32, 10, 8);
+    docTalonario.setFontSize(13);
+    docTalonario.text((nota.fecha).slice(0,2), 85.5, 37.5);
+    docTalonario.text((nota.fecha).slice(3,5), 95.5, 37.5);
+    docTalonario.text((nota.fecha).slice(8,10), 105.5, 37.5);
+    docTalonario.setFontSize(10);
+    docTalonario.text('FECHA', 92, 31.25);
+    docTalonario.setFont('helvetica', 'bold');
+    docTalonario.text('Señor (es):', 9, 26);
+    docTalonario.setFontSize(8);
+    docTalonario.text(nota.cliente?.nombre, 28, 26);
+    docTalonario.rect(7, 41.5, 106, 90);
+    docTalonario.rect(7, 41.5, 106, 5);
+    docTalonario.setLineDash([0.5, 1]);
+    let vari = 41.5;
+    for (let i = 0; i < 17; i++) {
+      vari = vari + 5;
+      docTalonario.line(7, vari, 113, vari);
+    }
+    docTalonario.setLineDash([]);
+    docTalonario.line(14.5, 41.5, 14.5, 131.5);
+    docTalonario.line(65, 41.5, 65, 131.5);
+    docTalonario.line(81, 41.5, 81, 131.5);
+    docTalonario.line(97, 41.5, 97, 131.5);
+    docTalonario.setFont('helvetica', 'bold');
+    docTalonario.setFontSize(6);
+    docTalonario.text('CANT.', 7.5, 45);
+    docTalonario.text('D E T A L L E', 33.25, 45);
+    docTalonario.text('KGS', 70.60, 45);
+    docTalonario.text('UNITARIO', 83.80, 45);
+    docTalonario.text('IMPORTE', 100.3, 45);
+    let altura = 45 + 5; 
+    let totalSin = 0;
+    docTalonario.setFontSize(7);
+    productos.forEach(productos => {
+      docTalonario.text(String(productos.cantidad || ''), 11.5, altura,{ align: 'right' });
+      docTalonario.text(productos.descripcion || '', 16, altura);
+      docTalonario.text(String((productos.peso/1000).toFixed(3) || ''), 79, altura,{ align: 'right' });
+      docTalonario.text(`${Number(productos.precio).toFixed(2)}`, 95, altura,{ align: 'right' });
+      let subTotal = (productos.precio * (productos.modo === 1 ? productos.peso/1000 : productos.cantidad));
+      totalSin = totalSin + subTotal;
+      docTalonario.text(`${Number(subTotal).toFixed(2)}`, 111, altura,{ align: 'right' });
+      altura += 5;
+    });
+    docTalonario.setFontSize(10);
+    docTalonario.rect(93, 133, 20, 7);
+    docTalonario.text(`${Number(totalSin).toFixed(2)}`, 111, 138,{ align: 'right' });
+
+    docTalonario.save(`nota_talonario_${notaId}.pdf`);
+  } catch (error) {
+    console.error('Error al imprimir nota:', error);
+  }
+}
+
 async function imprimirNota(notaId) {
   try {
     // Obtener los datos de la nota desde Firebase
@@ -494,7 +588,12 @@ async function imprimirNota(notaId) {
     const productos = nota.productos;
 
     // Crear el PDF con jsPDF
-    const docPDF = new jsPDF();
+    const docPDF = new jsPDF({
+      orientation: 'portrait', // 'landscape' si lo querés horizontal
+      unit: 'mm',              // milímetros
+      format: 'a4'             // tamaño A4
+    });
+
     docPDF.setFont('courier', 'bold');
     docPDF.setFontSize(10);
     const startX = 20;
@@ -529,10 +628,10 @@ async function imprimirNota(notaId) {
       docPDF.text(productos.codigo || '', 23, y,{ align: 'right' });
       docPDF.text(productos.descripcion || '', 30, y);
       docPDF.text(String(productos.cantidad || ''), 112, y,{ align: 'right' });
-      docPDF.text(String(productos.peso.toFixed(2) || ''), 136, y,{ align: 'right' });
+      docPDF.text(String(productos.peso || ''), 136, y,{ align: 'right' });
       docPDF.text(`${Number(productos.precio).toFixed(2)}`, 160, y,{ align: 'right' });
       docPDF.text(`${productos.descuento.toFixed(2) || '0.00'}`, 177, y,{ align: 'right' });
-      let subTotal = (productos.precio * (productos.modo === 1 ? productos.peso : productos.cantidad));
+      let subTotal = (productos.precio * (productos.modo === 1 ? productos.peso/1000 : productos.cantidad));
       totalSin = totalSin + subTotal;
       pesoTotal = pesoTotal + productos.peso;
       docPDF.text(`${Number(subTotal).toFixed(2)}`, 201, y,{ align: 'right' });
@@ -542,7 +641,7 @@ async function imprimirNota(notaId) {
     // Total
     y = 130;
     docPDF.text('Total Kg.:',112,y,{ align: 'right' });
-    docPDF.text(Number(pesoTotal).toFixed(2),136,y,{ align: 'right' });
+    docPDF.text(String((pesoTotal/1000).toFixed(3)),136,y,{ align: 'right' });
     y += 4;
     docPDF.text(`TOTAL Sin Dto.: $${Number(totalSin).toFixed(2)}`,20,y);
     let diferencia = Math.abs(totalSin - nota.total);
@@ -558,6 +657,8 @@ async function imprimirNota(notaId) {
     console.error('Error al imprimir nota:', error);
   }
 }
+
+onMounted(cargarNotas)
 </script>
 <style>
 .container{
@@ -600,6 +701,15 @@ async function imprimirNota(notaId) {
   height: 75%;
 }
 
+button {
+  background-color: black;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
 .close-btn {
   position: absolute;
   top: 10px;
