@@ -6,6 +6,7 @@
     <nav>
       <router-link to="/">Gestor Stock</router-link> |
       <router-link to="/clientes">Clientes</router-link> |
+      <router-link to="/recordatorios">Recordatorios</router-link> |
       <router-link to="/nota-pedido">Venta</router-link> 
     </nav>
   </header>

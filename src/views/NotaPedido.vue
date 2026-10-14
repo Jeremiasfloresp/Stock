@@ -92,7 +92,7 @@
                       <td class="border px-1 py-0">{{ item.peso }}</td>
                       <td class="border px-1 py-0">{{ item.precio }}</td>
                       <td class="border px-1 py-0">{{ item.descuento }}%</td>
-                      <td class="border px-1 py-0">{{ ((item.precio * (item.modo === 1 ? item.peso/1000 : item.cantidad)).toFixed(2)) }}</td>
+                      <td class="border px-1 py-0">{{ ((item.precio * item.cantidad).toFixed(2)) }}</td>
                     </tr>
                     <tr style="border: 0px">
                       <td></td>
@@ -200,7 +200,7 @@ const cargarNotas = async () => {
 }
 
 const total = computed(() =>
-  detalleVenta.value.reduce((suma, item) => suma + ((item.precio * (item.modo === 1 ? item.peso/1000 : item.cantidad)) * (1 - (item.descuento || 0) / 100)), 0)
+  detalleVenta.value.reduce((suma, item) => suma + ((item.precio * item.cantidad) * (1 - (item.descuento || 0) / 100)), 0)
 )
 
 const paginaActual = ref(1);

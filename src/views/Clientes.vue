@@ -49,7 +49,6 @@
         <tr>
           <th class="border px-4 py-2">Nombre</th>
           <th class="border px-4 py-2">Identificador</th>
-          <th class="border px-4 py-2">Deuda</th>
           <th class="border px-4 py-2">Acciones</th>
         </tr>
       </thead>
@@ -57,10 +56,8 @@
         <tr v-for="cliente in paginatedClientes" :key="cliente.id">
           <td class="border px-4 py-0">{{ cliente.nombre }}</td>
           <td class="border px-4 py-0">{{ cliente.identificador }}</td>
-          <td class="border px-4 py-0">${{ cliente.deuda.toFixed(2)  }}</td>
           <td class="border px-4 py-0">
-            <button @click="abrirModalPago(cliente)" class="bg-yellow-500 text-white px-2 py-1 rounded">Pagar Deuda</button>
-            <button @click="abrirModalDeuda(cliente)" class="bg-red-500 text-white px-2 py-1 rounded">Agregar Deuda</button>
+            <router-link :to="`/clientes/${cliente.id}`" class="bg-green-500 text-white px-2 py-1 rounded">Mascotas</router-link>
             <button @click="editarCliente(cliente)" class="bg-blue-500 text-white px-2 py-1 rounded">Ver/Editar</button>
             <button @click="eliminarCliente(cliente.id)" class="bg-red-500 text-white px-2 py-1 rounded">Eliminar</button>
           </td>
@@ -106,56 +103,6 @@
       </div>
     </teleport>
 
-    <!-- Modal de Pago -->
-    <Teleport to="body">
-      <div v-if="clienteParaPagar" class="vue-modal-overlay">
-        <div class="vue-modal-content">
-          <button class="modal-close" @click="clienteParaPagar = null">&times;</button>
-          <h3 class="text-xl font-bold mb-4">Pago de Deuda</h3>
-          <p class="mb-2"><strong>Cliente:</strong> {{ clienteParaPagar.nombre }}</p>
-          <p class="mb-4"><strong>Deuda actual:</strong> ${{ clienteParaPagar.deuda }}</p>
-          
-          <label for="monto" class="block mb-2">Monto a pagar:</label>
-          <input
-            id="monto"
-            type="number"
-            v-model="montoPago"
-            class="modal-input"
-            placeholder="Ingrese el monto"
-            min="0"
-          />
-          
-          <div class="flex justify-end">
-            <button @click="confirmarPago" class="bg-green-500 text-white px-4 py-2 rounded mr-2">Pagar</button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
-    <Teleport to="body">
-      <div v-if="clienteParaModificar" class="vue-modal-overlay">
-        <div class="vue-modal-content">
-          <button class="modal-close" @click="clienteParaModificar = null">&times;</button>
-          <h3 class="text-xl font-bold mb-4">Agregar Deuda</h3>
-          <p class="mb-2"><strong>Cliente:</strong> {{ clienteParaModificar.nombre }}</p>
-          <p class="mb-4"><strong>Deuda actual:</strong> ${{ clienteParaModificar.deuda }}</p>
-          
-          <label for="montoDeuda" class="block mb-2">Monto a agregar:</label>
-          <input
-            id="montoDeuda"
-            type="number"
-            v-model="montoDeuda"
-            class="modal-input"
-            placeholder="Ingrese el monto"
-            min="0"
-          />
-          
-          <div class="flex justify-end">
-            <button @click="confirmarAgregarDeuda" class="bg-blue-500 text-white px-4 py-2 rounded">Agregar</button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
-
   </div>
 </template>
 
@@ -185,8 +132,7 @@ const newCliente = ref({
   provincia: 'BUENOS AIRES',
   telefono: '',
   cuentaCorriente: '',
-  cuit: '',
-  deuda: 0
+  cuit: ''
 })
 
 const fetchClientes = async () => {
@@ -207,56 +153,8 @@ const addCliente = async () => {
     provincia: 'BUENOS AIRES',
     telefono: '',
     cuentaCorriente: '',
-    cuit: '',
-    deuda: 0
+    cuit: ''
   })
-  fetchClientes()
-}
-
-const clienteParaPagar = ref(null)
-const montoPago = ref(null)
-const clienteParaModificar = ref(null)
-const montoDeuda = ref(null)
-
-const abrirModalPago = (cliente) => {
-  clienteParaPagar.value = cliente
-  montoPago.value = null
-}
-
-const confirmarPago = async () => {
-  if (!montoPago.value || montoPago.value <= 0) {
-    alert("Ingresa un monto válido")
-    return
-  }
-
-  const nuevoTotal = (clienteParaPagar.value.deuda || 0) - montoPago.value
-
-  const clienteRef = doc(db, 'clientes', clienteParaPagar.value.id)
-  await updateDoc(clienteRef, { deuda: nuevoTotal })
-
-  clienteParaPagar.value.deuda = nuevoTotal
-  clienteParaPagar.value = null
-  fetchClientes()
-}
-
-const abrirModalDeuda = (cliente) => {
-  clienteParaModificar.value = cliente
-  montoDeuda.value = null
-}
-
-const confirmarAgregarDeuda = async () => {
-  if (!montoDeuda.value || montoDeuda.value <= 0) {
-    alert("Ingresa un monto válido")
-    return
-  }
-
-  const nuevoTotal = (clienteParaModificar.value.deuda || 0) + montoDeuda.value
-
-  const clienteRef = doc(db, 'clientes', clienteParaModificar.value.id)
-  await updateDoc(clienteRef, { deuda: nuevoTotal })
-
-  clienteParaModificar.value.deuda = nuevoTotal
-  clienteParaModificar.value = null
   fetchClientes()
 }
 
