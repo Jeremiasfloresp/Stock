@@ -350,8 +350,8 @@ onMounted(cargar)
 
 <style>
 .tabs { display: flex; gap: 0.5rem; margin: 1rem 0; flex-wrap: wrap; }
-.tab { padding: 0.4rem 0.9rem; border: 1px solid #ccc; border-radius: 0.25rem; background: #eee; cursor: pointer; }
-.tab.activa { background: #3b82f6; color: white; border-color: #3b82f6; }
+.tab { padding: 0.4rem 0.9rem; border: 1px solid #ccc; border-radius: 0.25rem; background: #eee; color: #000; cursor: pointer; }
+.tab.activa { background: #000; color: #fff; border-color: #000; }
 .alerta { background: #fff4e5; border: 1px solid #f59e0b; padding: 0.5rem 1rem; border-radius: 0.25rem; margin: 0.75rem 0; }
 .estado-vencida { color: #b91c1c; font-weight: bold; }
 .estado-proxima { color: #b45309; font-weight: bold; }

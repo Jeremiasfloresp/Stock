@@ -37,8 +37,8 @@
           <td class="border px-4 py-0">{{ f.dueno?.telefono }}</td>
           <td class="border px-4 py-0">{{ f.tipo === 'desparasitacion' ? 'Desparasitación' : 'Vacuna' }}: {{ f.nombre }}</td>
           <td class="border px-4 py-0">
-            <router-link :to="`/clientes/${f.clienteId}/mascotas/${f.mascotaId}`" class="bg-green-500 text-white px-2 py-1 rounded">Ficha</router-link>
-            <a v-if="linkWhatsapp(f)" :href="linkWhatsapp(f)" target="_blank" rel="noopener" class="bg-blue-500 text-white px-2 py-1 rounded">WhatsApp</a>
+            <router-link :to="`/clientes/${f.clienteId}/mascotas/${f.mascotaId}`" class="boton">Ficha</router-link>
+            <a v-if="linkWhatsapp(f)" :href="linkWhatsapp(f)" target="_blank" rel="noopener" class="boton">WhatsApp</a>
           </td>
         </tr>
       </tbody>

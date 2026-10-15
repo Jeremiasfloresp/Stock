@@ -57,7 +57,7 @@
           <td class="border px-4 py-0">{{ cliente.nombre }}</td>
           <td class="border px-4 py-0">{{ cliente.identificador }}</td>
           <td class="border px-4 py-0">
-            <router-link :to="`/clientes/${cliente.id}`" class="bg-green-500 text-white px-2 py-1 rounded">Mascotas</router-link>
+            <router-link :to="`/clientes/${cliente.id}`" class="boton">Mascotas</router-link>
             <button @click="editarCliente(cliente)" class="bg-blue-500 text-white px-2 py-1 rounded">Ver/Editar</button>
             <button @click="eliminarCliente(cliente.id)" class="bg-red-500 text-white px-2 py-1 rounded">Eliminar</button>
           </td>

@@ -33,7 +33,7 @@
             <td class="border px-4 py-0">{{ m.sexo }}</td>
             <td class="border px-4 py-0">{{ edad(m.fechaNacimiento) }}</td>
             <td class="border px-4 py-0">
-              <router-link :to="`/clientes/${clienteId}/mascotas/${m.id}`" class="bg-green-500 text-white px-2 py-1 rounded">Ficha clínica</router-link>
+              <router-link :to="`/clientes/${clienteId}/mascotas/${m.id}`" class="boton">Ficha clínica</router-link>
               <button @click="abrirForm(m)" class="bg-blue-500 text-white px-2 py-1 rounded">Editar</button>
               <button @click="eliminar(m)" class="bg-red-500 text-white px-2 py-1 rounded">Eliminar</button>
             </td>

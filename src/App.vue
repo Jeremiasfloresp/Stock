@@ -57,6 +57,21 @@ nav a.router-link-exact-active {
   color: #42b983;
 }
 
+button,
+a.boton {
+  display: inline-block;
+  background-color: black;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0 2px;
+}
+
 /* Le damos espacio al contenido para que no quede tapado */
 main {
   position: relative;
